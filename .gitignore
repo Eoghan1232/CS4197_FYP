@@ -1,0 +1,11 @@
+
+*.d2v
+*.pyc
+*.pyc
+*.data-00000-of-00001
+*.npy
+*.pb
+*.pyc
+*.index
+*.pyc
+Implementation/__pycache__/NN.cpython-37.pyc
