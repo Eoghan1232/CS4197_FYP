@@ -143,7 +143,7 @@ class MovieDataset:
 
         model_training.fit(self.X_train, self.X_test, validation_data=(self.Y_train, self.Y_test), batch_size=128,
                            epochs=10)
-        model_training.save("G:/FYP_Work/CNN_models/movie_review_model")
+        model_training.save("./CNN_models/movie_review_model")
         # model_training.save("C:/Users/eogha/Documents/Workspace/CNN_Models/movie_review_model")
         # Final evaluation of the model
         scores = model_training.evaluate(self.Y_train, self.Y_test, verbose=0)
@@ -153,7 +153,7 @@ class MovieDataset:
     def test_dataset(self, q):
         self.load_d2v(q, 0)
         # Relative Paths. Not absolute paths.****
-        model_training = tf.keras.models.load_model("G:/FYP_Work/CNN_models/movie_review_model")
+        model_training = tf.keras.models.load_model("./CNN_models/movie_review_model")
         # model_training = tf.keras.models.load_model("C:/Users/eogha/Documents/Workspace/CNN_Models/movie_review_model")
         self.load_testset(q)
 
@@ -179,7 +179,7 @@ class MovieDataset:
         tf.compat.v1.keras.backend.set_session(session)
 
         self.model_movie.load(self.reader.get_models_path(), self.model_name)
-        model_training = tf.keras.models.load_model("G:/FYP_Work/CNN_models/movie_review_model")
+        model_training = tf.keras.models.load_model("./CNN_models/movie_review_model")
         # model_training = tf.keras.models.load_model("C:/Users/eogha/Documents/Workspace/CNN_Models/movie_review_model")
         processed_content = simple_preprocess(remove_stopwords(text_input))
         new_doc2vec = np.array(self.model_movie.infer_doc(processed_content))
@@ -263,8 +263,8 @@ class ReutersDataset:
     def __init__(self):
         self.model_reuters = D2V()
         self.model_name = "reuters_d2v.d2v"
-        self.doc2vec_model_location = "G:/FYP_Work/doc2vec_models"
-        self.model_reuters_path = "G:/FYP_Work/CNN_models/reuters_model"
+        self.doc2vec_model_location = "./doc2vec_models"
+        self.model_reuters_path = "./CNN_models/reuters_model"
         self.doc2vec_dimensions = 300
 
     def load_d2v(self, q, param):
@@ -411,9 +411,9 @@ class FileReader:
         # self.__testing_path = "C:/Users/eogha/Documents/Workspace/FYP_Datasets/Large_Movie_dataset/aclImdb/test"
         # self.__training_path = "C:/Users/eogha/Documents/Workspace/FYP_Datasets/Large_Movie_dataset/aclImdb/train"
         # self.__models_paths = "C:/Users/eogha/Documents/Workspace/doc2vec_models"
-        self.__models_paths = "G:/FYP_Work/doc2vec_models"
-        self.__training_path = "G:/FYP_Work/FYP_Datasets/Large_Movie_dataset/aclImdb/train"
-        self.__testing_path = "G:/FYP_Work/FYP_Datasets/Large_Movie_dataset/aclImdb/test"
+        self.__models_paths = "./doc2vec_models"
+        self.__training_path = "./FYP_Datasets/Large_Movie_dataset/aclImdb/train"
+        self.__testing_path = "./FYP_Datasets/Large_Movie_dataset/aclImdb/test"
 
     def read_corpus_train(self, q):
 
