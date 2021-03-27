@@ -20,7 +20,6 @@ class UserGUI:
         self.__root.title("Document Classifier")
         self.__root.geometry('700x700')
         self.__root.resizable(True, False)
-        self.trained_model = None
         self.__root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         # Tabs
