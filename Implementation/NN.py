@@ -94,11 +94,6 @@ class MovieDataset:
         self.X_test = tf.squeeze(self.X_test, axis=-1)
         self.Y_test = tf.squeeze(self.Y_test, axis=-1)
 
-        # print(self.X_train.shape)
-        # print(self.X_test.shape)
-        # print(self.Y_train.shape)
-        # print(self.Y_test.shape)
-
         q.put([0, "Begining Model Training"])
 
         model_training = Sequential()
