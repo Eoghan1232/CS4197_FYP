@@ -1,49 +1,25 @@
 import os
-from random import shuffle
 import gensim
-import pandas as pd
-import glob
 import numpy as np
-import matplotlib.pyplot as plt
-import re
-from os.path import join
 from gensim.models.doc2vec import Doc2Vec
-from sklearn.neural_network import MLPClassifier
-from sklearn import metrics
 from gensim.utils import simple_preprocess
-from nltk.tokenize import word_tokenize
 from gensim.models.doc2vec import TaggedDocument
 from gensim.parsing.preprocessing import remove_stopwords
-import tensorflow as tf
-import tensorflow.keras as keras
-
 from tensorflow.keras.layers import Dropout, Activation, Flatten
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Conv1D, MaxPooling1D
+from tensorflow.keras.layers import Conv1D, MaxPooling1D
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import InputLayer
-from tensorflow.keras.layers import LSTM
-from keras.utils import to_categorical
 from sklearn.preprocessing import MultiLabelBinarizer
-import logging
-import multiprocessing
 import tensorflow as tf
-import collections
-
-from csv import reader
-import pandas as pd
-from io import StringIO
-
 from nltk.corpus import reuters
 import nltk
-nltk.download('reuters')
-nltk.download('punkt')
-
 from Doc2Vec import D2V
 from data_storer import DataStorer
 
+nltk.download('reuters')
+nltk.download('punkt')
 
-# import tensorflow.keras as keras
 
 class MovieDataset:
 
@@ -144,7 +120,6 @@ class MovieDataset:
         model_training.fit(self.X_train, self.X_test, validation_data=(self.Y_train, self.Y_test), batch_size=128,
                            epochs=10)
         model_training.save("./CNN_models/movie_review_model")
-        # model_training.save("C:/Users/eogha/Documents/Workspace/CNN_Models/movie_review_model")
         # Final evaluation of the model
         scores = model_training.evaluate(self.Y_train, self.Y_test, verbose=0)
         accuracy = scores[1] * 100
@@ -154,7 +129,6 @@ class MovieDataset:
         self.load_d2v(q, 0)
         # Relative Paths. Not absolute paths.****
         model_training = tf.keras.models.load_model("./CNN_models/movie_review_model")
-        # model_training = tf.keras.models.load_model("C:/Users/eogha/Documents/Workspace/CNN_Models/movie_review_model")
         self.load_testset(q)
 
         self.Y_train = np.array(self.test_docs)
@@ -180,7 +154,6 @@ class MovieDataset:
 
         self.model_movie.load(self.reader.get_models_path(), self.model_name)
         model_training = tf.keras.models.load_model("./CNN_models/movie_review_model")
-        # model_training = tf.keras.models.load_model("C:/Users/eogha/Documents/Workspace/CNN_Models/movie_review_model")
         processed_content = simple_preprocess(remove_stopwords(text_input))
         new_doc2vec = np.array(self.model_movie.infer_doc(processed_content))
         new_doc2vec = np.reshape(new_doc2vec, (1, 300, 1))
@@ -301,12 +274,15 @@ class ReutersDataset:
         labelBinarizer = MultiLabelBinarizer()
         labelBinarizer.fit([reuters.categories(fileId) for fileId in reuters.fileids()])
 
-        train_data = [self.model_reuters.infer_doc(gensim.utils.simple_preprocess(remove_stopwords(article['raw'].lower()))) for
-                      article in train_articles]
+        train_data = [
+            self.model_reuters.infer_doc(gensim.utils.simple_preprocess(remove_stopwords(article['raw'].lower()))) for
+            article in train_articles]
         # print("train_data Complete")
         q.put([0, "train_data Complete"])
-        test_data = [self.model_reuters.infer_doc(gensim.utils.simple_preprocess(remove_stopwords(article['raw'].lower()))) for article
-                     in test_articles]
+        test_data = [
+            self.model_reuters.infer_doc(gensim.utils.simple_preprocess(remove_stopwords(article['raw'].lower()))) for
+            article
+            in test_articles]
         # print("test_data Complete")
         q.put([0, "test_data Complete"])
         train_labels = labelBinarizer.transform([article['categories'] for article in train_articles])
@@ -369,7 +345,8 @@ class ReutersDataset:
 
         test_articles = [{'raw': reuters.raw(fileId), 'categories': reuters.categories(fileId)} for fileId in
                          reuters.fileids() if fileId.startswith('test/')]
-        test_data = [self.model_reuters.infer_doc(gensim.utils.simple_preprocess(remove_stopwords(article['raw']))) for article in test_articles]
+        test_data = [self.model_reuters.infer_doc(gensim.utils.simple_preprocess(remove_stopwords(article['raw']))) for
+                     article in test_articles]
 
         test_data = np.reshape(test_data, (len(test_data), 300, 1))
 
@@ -394,7 +371,8 @@ class ReutersDataset:
         # print(result)
         # q.put([0, result])
 
-        test_data = [self.model_reuters.infer_doc(gensim.utils.simple_preprocess(remove_stopwords(article['raw']))) for article in test_articles]
+        test_data = [self.model_reuters.infer_doc(gensim.utils.simple_preprocess(remove_stopwords(article['raw']))) for
+                     article in test_articles]
         test_labels = labelBinarizer.transform([article['categories'] for article in test_articles])
         test_data = np.reshape(test_data, (len(test_data), 300, 1))
         test_labels = np.reshape(test_labels, (len(test_labels), 90, 1))
@@ -407,10 +385,6 @@ class ReutersDataset:
 
 class FileReader:
     def __init__(self):
-
-        # self.__testing_path = "C:/Users/eogha/Documents/Workspace/FYP_Datasets/Large_Movie_dataset/aclImdb/test"
-        # self.__training_path = "C:/Users/eogha/Documents/Workspace/FYP_Datasets/Large_Movie_dataset/aclImdb/train"
-        # self.__models_paths = "C:/Users/eogha/Documents/Workspace/doc2vec_models"
         self.__models_paths = "./doc2vec_models"
         self.__training_path = "./FYP_Datasets/Large_Movie_dataset/aclImdb/train"
         self.__testing_path = "./FYP_Datasets/Large_Movie_dataset/aclImdb/test"

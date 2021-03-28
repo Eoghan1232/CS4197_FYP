@@ -4,11 +4,8 @@ from tkinter.ttk import *
 from Doc2Vec import D2V
 from NN import MovieDataset
 from NN import ReutersDataset
+from multiprocessing import Queue, Process
 
-from multiprocessing import Queue, Process, Pool
-import multiprocessing
-import queue
-import textwrap
 
 class UserGUI:
 
@@ -165,7 +162,6 @@ class UserGUI:
         self.load_doc2vec_model_reuters.pack(side=LEFT, pady=5, padx=5)
         self.train_classifier_reuters.pack(side=LEFT, pady=5, padx=5)
         self.test_classifier_reuters.pack(side=LEFT, pady=5, padx=5)
-
 
     def train_model_movie(self):
         self.clear_output_movie()
