@@ -50,8 +50,6 @@ class MovieDataset:
             self.load_data()
             self.labels = self.data_handler.get_topics()
 
-            # print(self.doc_labels)
-            # print(self.labels)
             if param == 0:
                 q.put([0, "D2V model loaded Successfully"])
             else:
@@ -67,9 +65,7 @@ class MovieDataset:
     def train_d2v(self, q):
         q.put([0, "Staring training of Doc2Vec model"])
         train_corpus = list(self.reader.read_corpus_train(q))
-        # print("FINISHED HERE")
         result = self.model_movie.train(train_corpus)
-        # print(result)
         if result == 1:
             q.put([0, "Doc2Vec Training Complete! Attempting to save D2V model now."])
             self.model_movie.save(self.reader.get_models_path(), self.model_name)
@@ -122,7 +118,6 @@ class MovieDataset:
 
     def test_dataset(self, q):
         self.load_d2v(q, 0)
-        # Relative Paths. Not absolute paths.****
         model_training = tf.keras.models.load_model("./CNN_models/movie_review_model")
         self.load_testset(q)
 
@@ -153,7 +148,6 @@ class MovieDataset:
         new_doc2vec = np.array(self.model_movie.infer_doc(processed_content))
         new_doc2vec = np.reshape(new_doc2vec, (1, 300, 1))
         prediction = (model_training.predict(new_doc2vec))
-        # print(prediction)
         temp = []
         for val in prediction[0]:
             temp.append(round(val, 2))
@@ -354,17 +348,11 @@ class ReutersDataset:
         labelBinarizer.fit([reuters.categories(fileId) for fileId in reuters.fileids()])
         predicted_labels = labelBinarizer.inverse_transform(predictions)
 
-        # print(len(predicted_labels))
-        # result = ""
         for predicted_label, test_article in zip(predicted_labels, test_articles):
-            # print('title: {}'.format(test_article['raw'].splitlines()[0])) + "\n"
-            # print('predicted: {} - actual: {}'.format(list(predicted_label), test_article['categories']))
             result = 'title: {}'.format(test_article['raw'].splitlines()[0])
             q.put([0, result])
             result = 'predicted: {} - actual: {}'.format(list(predicted_label), test_article['categories'])
             q.put([0, result])
-        # print(result)
-        # q.put([0, result])
 
         test_data = [self.model_reuters.infer_doc(gensim.utils.simple_preprocess(remove_stopwords(article['raw']))) for
                      article in test_articles]
@@ -410,3 +398,5 @@ class FileReader:
 
     def get_testing_path(self):
         return self.__testing_path
+
+

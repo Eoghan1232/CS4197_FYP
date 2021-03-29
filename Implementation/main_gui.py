@@ -10,7 +10,6 @@ from multiprocessing import Queue, Process
 class UserGUI:
 
     def __init__(self):
-        self.d2v = D2V()
         self.movie_dataset = MovieDataset()
         self.reuters_dataset = ReutersDataset()
         self.__root = Tk()
@@ -22,20 +21,6 @@ class UserGUI:
         # Tabs
         self.tab = Notebook(master=self.__root)
         self.tab.pack(fill=BOTH, expand=1, padx=15, pady=15)
-
-        # Widgets (Large Movie Review)
-        self.treeview_movie = None
-        self.input_text = None
-
-        # Widgets (Reuters)
-
-        # Buttons (Large Movie Review)
-        self.train_doc2vec_model = None
-        self.load_doc2vec_model = None
-        self.train_classifier = None
-        self.classify_input = None
-
-        # Buttons (Reuters)
 
         # Initiate Operations
         self.__init_movie_dataset_components()
