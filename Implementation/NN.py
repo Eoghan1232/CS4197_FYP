@@ -21,6 +21,7 @@ nltk.download('reuters')
 nltk.download('punkt')
 
 
+# Movie Dataset class. Contains all functions associated with the Movie Dataset.
 class MovieDataset:
 
     def __init__(self):
@@ -398,5 +399,3 @@ class FileReader:
 
     def get_testing_path(self):
         return self.__testing_path
-
-
