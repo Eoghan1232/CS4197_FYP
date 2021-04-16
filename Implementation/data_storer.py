@@ -1,5 +1,3 @@
-
-
 # DataStorer class used for the Movie Review Dataset
 class DataStorer:
 

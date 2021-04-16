@@ -1,12 +1,12 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter.ttk import *
-from Doc2Vec import D2V
 from NN import MovieDataset
 from NN import ReutersDataset
 from multiprocessing import Queue, Process
 
 
+# GUI Class
 class UserGUI:
 
     def __init__(self):
@@ -26,6 +26,7 @@ class UserGUI:
         self.__init_movie_dataset_components()
         self.__init_reuters_dataset_components()
 
+    # Initialise the move dataset tab
     def __init_movie_dataset_components(self):
         large_movie_review_dataset = Frame()
         large_movie_review_dataset.pack()
@@ -92,6 +93,7 @@ class UserGUI:
         self.classify_input = Button(master=classify_frame, text="Classify", command=self.classify_new_input_movie)
         self.classify_input.pack(side=LEFT)
 
+    # initialise the reuters dataset tab
     def __init_reuters_dataset_components(self):
         reuters_dataset = Frame()
         reuters_dataset.pack()
@@ -148,6 +150,7 @@ class UserGUI:
         self.train_classifier_reuters.pack(side=LEFT, pady=5, padx=5)
         self.test_classifier_reuters.pack(side=LEFT, pady=5, padx=5)
 
+    # Method to train the movie dataset CNN
     def train_model_movie(self):
         self.clear_output_movie()
         self.disable_buttons_movie()
@@ -160,6 +163,7 @@ class UserGUI:
 
         self.__root.after(5000, self.check_result_movie, queue1)
 
+    # Method to train the reuters dataset CNN
     def train_model_reuters(self):
         self.clear_output_reuters()
         self.disable_buttons_reuters()
@@ -172,6 +176,7 @@ class UserGUI:
 
         self.__root.after(5000, self.check_result_reuters, queue1)
 
+    # Method to train movie dataset Doc2Vec model
     def train_d2v_movie(self):
         self.clear_output_movie()
         self.disable_buttons_movie()
@@ -186,6 +191,7 @@ class UserGUI:
         # result = self.movie_dataset.train_dataset()
         # print(result)
 
+    # Method to train reuters dataset Doc2Vec model
     def train_d2v_reuters(self):
         self.clear_output_reuters()
         self.disable_buttons_reuters()
@@ -198,6 +204,7 @@ class UserGUI:
 
         self.__root.after(5000, self.check_result_reuters, queue1)
 
+    # Method to classify custom input from user
     def classify_new_input_movie(self):
         self.clear_output_movie()
         self.disable_buttons_movie()
@@ -211,6 +218,7 @@ class UserGUI:
 
         self.__root.after(5000, self.check_result_movie, queue1)
 
+    # Method to test the movie CNN model on test data
     def test_dataset_movie(self):
         self.clear_output_movie()
         self.disable_buttons_movie()
@@ -222,6 +230,7 @@ class UserGUI:
 
         self.__root.after(5000, self.check_result_movie, queue1)
 
+    # Method to test the reuters CNN model on test data
     def test_dataset_reuters(self):
         self.clear_output_reuters()
         self.disable_buttons_reuters()
@@ -234,6 +243,7 @@ class UserGUI:
 
         self.__root.after(5000, self.check_result_reuters, queue1)
 
+    # Method to load the movie Doc2Vec model
     def load_d2v_model_movie(self):
         self.clear_output_movie()
         self.disable_buttons_movie()
@@ -246,6 +256,7 @@ class UserGUI:
 
         self.__root.after(5000, self.check_result_movie, queue1)
 
+    # Method to load the reuters Doc2Vec model
     def load_d2v_model_reuters(self):
         self.clear_output_reuters()
         self.disable_buttons_reuters()
@@ -258,6 +269,8 @@ class UserGUI:
 
         self.__root.after(5000, self.check_result_reuters, queue1)
 
+    # Recursive method to check when any function of the movie dataset is running.
+    # It checks every 5 seconds, and stops once its passed a 1.
     def check_result_movie(self, param):
         print("method called")
         if param.empty():
@@ -280,6 +293,8 @@ class UserGUI:
             # self.update_text(param.get()[0])
         # print("This is whats on the queue %s" % param.get())
 
+    # Recursive method to check when any function of the reuters dataset is running.
+    # It checks every 5 seconds, and stops once its passed a 1.
     def check_result_reuters(self, param):
         print("method called")
         if param.empty():
@@ -300,12 +315,15 @@ class UserGUI:
             if callagain:
                 self.__root.after(5000, self.check_result_reuters, param)
 
+    # Method to update the text box on movie tab
     def update_text_movie(self, text):
         self.treeview_movie.insert("", "end", text=text)
 
+    # Method to update the text box on reuters tab
     def update_text_reuters(self, text):
         self.treeview_reuters.insert("", "end", text=text)
 
+    # Method to enable all movie buttons on the GUI
     def enable_buttons_movie(self):
         self.train_doc2vec_model_movie['state'] = "normal"
         self.load_doc2vec_model_movie['state'] = "normal"
@@ -313,12 +331,14 @@ class UserGUI:
         self.train_classifier_movie['state'] = "normal"
         self.test_classifier_movie['state'] = "normal"
 
+    # Method to enable all reuters buttons on the GUI
     def enable_buttons_reuters(self):
         self.train_doc2vec_model_reuters['state'] = "normal"
         self.load_doc2vec_model_reuters['state'] = "normal"
         self.train_classifier_reuters['state'] = "normal"
         self.test_classifier_reuters['state'] = "normal"
 
+    # Method to disable all movie buttons on the GUI
     def disable_buttons_movie(self):
         self.train_doc2vec_model_movie['state'] = DISABLED
         self.load_doc2vec_model_movie['state'] = DISABLED
@@ -326,21 +346,27 @@ class UserGUI:
         self.train_classifier_movie['state'] = DISABLED
         self.test_classifier_movie['state'] = DISABLED
 
+    # Method to disable all reuters buttons on the GUI
     def disable_buttons_reuters(self):
         self.train_doc2vec_model_reuters['state'] = DISABLED
         self.load_doc2vec_model_reuters['state'] = DISABLED
         self.train_classifier_reuters['state'] = DISABLED
         self.test_classifier_reuters['state'] = DISABLED
 
+    # Method to clear the output on Movie Tab
     def clear_output_movie(self):
         self.treeview_movie.delete(*self.treeview_movie.get_children())
 
+    # Method to clear the output on Reuters Tab
     def clear_output_reuters(self):
         self.treeview_reuters.delete(*self.treeview_reuters.get_children())
 
+    # Displays the main GUI initially
     def display(self):
         self.__root.mainloop()
 
+    # On Closing method, once the user clicks the X in the top right of the screen. They are asked if they're sure
+    # they want to quit. If yes, it closing the application
     def on_closing(self):
         if messagebox.askokcancel("Quit", "Do you want to quit?"):
             self.__root.destroy()

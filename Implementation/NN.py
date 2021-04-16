@@ -227,6 +227,7 @@ class MovieDataset:
         tf.compat.v1.keras.backend.set_session(session)
 
 
+# Reuters Dataset class. Contains all functions associated with the Reuters Dataset.
 class ReutersDataset:
 
     def __init__(self):
