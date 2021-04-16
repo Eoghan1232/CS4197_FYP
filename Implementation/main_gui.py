@@ -151,6 +151,7 @@ class UserGUI:
     def train_model_movie(self):
         self.clear_output_movie()
         self.disable_buttons_movie()
+        self.disable_buttons_reuters()
 
         queue1 = Queue()
 
@@ -162,6 +163,7 @@ class UserGUI:
     def train_model_reuters(self):
         self.clear_output_reuters()
         self.disable_buttons_reuters()
+        self.disable_buttons_movie()
 
         queue1 = Queue()
 
@@ -173,6 +175,7 @@ class UserGUI:
     def train_d2v_movie(self):
         self.clear_output_movie()
         self.disable_buttons_movie()
+        self.disable_buttons_reuters()
 
         queue1 = Queue()
 
@@ -186,6 +189,7 @@ class UserGUI:
     def train_d2v_reuters(self):
         self.clear_output_reuters()
         self.disable_buttons_reuters()
+        self.disable_buttons_movie()
 
         queue1 = Queue()
 
@@ -197,6 +201,7 @@ class UserGUI:
     def classify_new_input_movie(self):
         self.clear_output_movie()
         self.disable_buttons_movie()
+        self.disable_buttons_reuters()
         queue1 = Queue()
 
         input = self.input_text.get("1.0", "end-1c")
@@ -209,6 +214,7 @@ class UserGUI:
     def test_dataset_movie(self):
         self.clear_output_movie()
         self.disable_buttons_movie()
+        self.disable_buttons_reuters()
         queue1 = Queue()
 
         process = Process(target=self.movie_dataset.test_dataset, args=(queue1,))
@@ -219,6 +225,7 @@ class UserGUI:
     def test_dataset_reuters(self):
         self.clear_output_reuters()
         self.disable_buttons_reuters()
+        self.disable_buttons_movie()
 
         queue1 = Queue()
 
@@ -230,6 +237,7 @@ class UserGUI:
     def load_d2v_model_movie(self):
         self.clear_output_movie()
         self.disable_buttons_movie()
+        self.disable_buttons_reuters()
 
         queue1 = Queue()
 
@@ -241,6 +249,7 @@ class UserGUI:
     def load_d2v_model_reuters(self):
         self.clear_output_reuters()
         self.disable_buttons_reuters()
+        self.disable_buttons_movie()
 
         queue1 = Queue()
 
@@ -264,6 +273,7 @@ class UserGUI:
                 elif result[0] == 1:
                     self.update_text_movie(result[1])
                     self.enable_buttons_movie()
+                    self.enable_buttons_reuters()
                     callagain = False
             if callagain:
                 self.__root.after(5000, self.check_result_movie, param)
@@ -285,6 +295,7 @@ class UserGUI:
                 elif result[0] == 1:
                     self.update_text_reuters(result[1])
                     self.enable_buttons_reuters()
+                    self.enable_buttons_movie()
                     callagain = False
             if callagain:
                 self.__root.after(5000, self.check_result_reuters, param)

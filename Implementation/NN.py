@@ -74,6 +74,7 @@ class MovieDataset:
     def train_dataset(self, q):
 
         self.load_d2v(q, 0)
+        self.config()
         self.load_trainset(q)
         self.load_testset(q)
 
@@ -108,15 +109,17 @@ class MovieDataset:
         model_training.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
         print(model_training.summary())
 
-        model_training.fit(self.X_train, self.X_test, validation_data=(self.Y_train, self.Y_test), batch_size=128,
-                           epochs=10)
+        model_training.fit(self.X_train, self.X_test, validation_data=(self.Y_train, self.Y_test), batch_size=64,
+                           epochs=25)
         model_training.save("./CNN_models/movie_review_model")
         # Final evaluation of the model
         scores = model_training.evaluate(self.Y_train, self.Y_test, verbose=0)
-        accuracy = scores[1] * 100
+        accuracy = scores[1]
+        accuracy = "Accuracy: " + "{:.1%}".format(accuracy)
         q.put([1, "Accuracy %s " % accuracy])
 
     def test_dataset(self, q):
+        self.config()
         self.load_d2v(q, 0)
         model_training = tf.keras.models.load_model("./CNN_models/movie_review_model")
         self.load_testset(q)
@@ -128,19 +131,13 @@ class MovieDataset:
         self.Y_test = np.reshape(self.Y_test, (len(self.Y_test), 2, 1))
         self.Y_test = tf.squeeze(self.Y_test, axis=-1)
 
-        loss, acc = model_training.evaluate(self.Y_train, self.Y_test, batch_size=128)
+        loss, acc = model_training.evaluate(self.Y_train, self.Y_test, batch_size=64)
         result = "Test Data Accuracy: " + "{:.1%}".format(acc)
         q.put([1, result])
 
     def test_dataset_new_input(self, q, text_input):
 
-        config = tf.compat.v1.ConfigProto(gpu_options=
-                                          tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.8)
-                                          # device_count = {'GPU': 1}
-                                          )
-        config.gpu_options.allow_growth = True
-        session = tf.compat.v1.Session(config=config)
-        tf.compat.v1.keras.backend.set_session(session)
+        self.config()
 
         self.model_movie.load(self.reader.get_models_path(), self.model_name)
         model_training = tf.keras.models.load_model("./CNN_models/movie_review_model")
@@ -219,6 +216,15 @@ class MovieDataset:
         # print("Finished loading test set")
         q.put([0, "Finished loading test set"])
 
+    def config(self):
+        config = tf.compat.v1.ConfigProto(gpu_options=
+                                          tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.8)
+                                          # device_count = {'GPU': 1}
+                                          )
+        config.gpu_options.allow_growth = True
+        session = tf.compat.v1.Session(config=config)
+        tf.compat.v1.keras.backend.set_session(session)
+
 
 class ReutersDataset:
 
@@ -255,6 +261,7 @@ class ReutersDataset:
 
     def train_dataset(self, q):
         self.load_d2v(q, 0)
+        self.config()
         train_articles = [{'raw': reuters.raw(fileId), 'categories': reuters.categories(fileId)} for fileId in
                           reuters.fileids() if fileId.startswith('training/')]
         test_articles = [{'raw': reuters.raw(fileId), 'categories': reuters.categories(fileId)} for fileId in
@@ -288,7 +295,7 @@ class ReutersDataset:
         test_data = np.reshape(test_data, (len(test_data), 300, 1))
         test_labels = np.reshape(test_labels, (len(test_labels), 90, 1))
 
-        print(train_data)
+        # print(train_data)
 
         train_labels = tf.squeeze(train_labels, axis=-1)
         test_labels = tf.squeeze(test_labels, axis=-1)
@@ -309,8 +316,8 @@ class ReutersDataset:
         model_training.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
         print(model_training.summary())
 
-        model_training.fit(train_data, train_labels, validation_data=(test_data, test_labels), batch_size=128,
-                           epochs=50)
+        model_training.fit(train_data, train_labels, validation_data=(test_data, test_labels), batch_size=64,
+                           epochs=25)
 
         model_training.save(self.model_reuters_path)
 
@@ -321,13 +328,7 @@ class ReutersDataset:
 
     def test_dataset(self, q):
 
-        config = tf.compat.v1.ConfigProto(gpu_options=
-                                          tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.8)
-                                          # device_count = {'GPU': 1}
-                                          )
-        config.gpu_options.allow_growth = True
-        session = tf.compat.v1.Session(config=config)
-        tf.compat.v1.keras.backend.set_session(session)
+        self.config()
 
         self.load_d2v(q, 0)
         model_training = tf.keras.models.load_model(self.model_reuters_path)
@@ -365,6 +366,15 @@ class ReutersDataset:
         accResult = "Accuracy: " + "{:.1%}".format(acc)
         q.put([1, accResult])
 
+    def config(self):
+        config = tf.compat.v1.ConfigProto(gpu_options=
+                                          tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.8)
+                                          # device_count = {'GPU': 1}
+                                          )
+        config.gpu_options.allow_growth = True
+        session = tf.compat.v1.Session(config=config)
+        tf.compat.v1.keras.backend.set_session(session)
+
 
 class FileReader:
     def __init__(self):
@@ -398,5 +408,3 @@ class FileReader:
 
     def get_testing_path(self):
         return self.__testing_path
-
-
