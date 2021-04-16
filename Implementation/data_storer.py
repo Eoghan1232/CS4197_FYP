@@ -1,6 +1,6 @@
-from gensim.models.doc2vec import TaggedDocument
 
 
+# DataStorer class used for the Movie Review Dataset
 class DataStorer:
 
     def __init__(self):
@@ -28,4 +28,3 @@ class DataStorer:
         self.__topics.clear()
         self.__documents.clear()
         self.__loaded_topics.clear()
-

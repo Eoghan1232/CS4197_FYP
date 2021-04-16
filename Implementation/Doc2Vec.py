@@ -3,6 +3,8 @@ from gensim.models.doc2vec import Doc2Vec
 import multiprocessing
 
 
+# Doc2Vec class Functions: train the Doc2Vec model, save the model, load the model, infer a document, get the vector
+# value for a document
 class D2V:
 
     def __init__(self):
@@ -13,6 +15,7 @@ class D2V:
                                epochs=70,
                                workers=cores - 1)
 
+    # Method used to train the Doc2Vec model. Takes the train corpus as input. returns 1 when trained successfully.
     def train(self, train_corpus):
         self.__model.build_vocab(train_corpus)
         self.__model.train(train_corpus, total_examples=self.__model.corpus_count, epochs=self.__model.epochs)
@@ -32,4 +35,3 @@ class D2V:
 
     def get_labels(self):
         return list(self.__model.docvecs.doctags.keys())
-
