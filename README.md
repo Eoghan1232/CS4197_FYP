@@ -1,6 +1,8 @@
 # CS4197_FYP
 My Final Year Project Repo
 
+https://github.com/Eoghan1232/CS4197_FYP
+
 Author: Eoghan Russell : 17202124
 
 Setup:

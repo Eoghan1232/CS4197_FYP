@@ -128,19 +128,22 @@ class MovieDataset:
     def test_dataset(self, q):
         self.config()
         self.load_d2v(q, 0)
-        model_training = tf.keras.models.load_model("./CNN_models/movie_review_model")
-        self.load_testset(q)
+        if not os.path.exists('./CNN_models/movie_review_model'):
+            q.put([1, "No CNN model found. Please Train a model first"])
+        else:
+            model_training = tf.keras.models.load_model("./CNN_models/movie_review_model")
+            self.load_testset(q)
 
-        self.Y_train = np.array(self.test_docs)
-        self.Y_test = np.array(self.test_topics)
+            self.Y_train = np.array(self.test_docs)
+            self.Y_test = np.array(self.test_topics)
 
-        self.Y_train = np.reshape(self.Y_train, (len(self.Y_train), 300, 1))
-        self.Y_test = np.reshape(self.Y_test, (len(self.Y_test), 2, 1))
-        self.Y_test = tf.squeeze(self.Y_test, axis=-1)
+            self.Y_train = np.reshape(self.Y_train, (len(self.Y_train), 300, 1))
+            self.Y_test = np.reshape(self.Y_test, (len(self.Y_test), 2, 1))
+            self.Y_test = tf.squeeze(self.Y_test, axis=-1)
 
-        loss, acc = model_training.evaluate(self.Y_train, self.Y_test, batch_size=64)
-        result = "Test Data Accuracy: " + "{:.1%}".format(acc)
-        q.put([1, result])
+            loss, acc = model_training.evaluate(self.Y_train, self.Y_test, batch_size=64)
+            result = "Test Data Accuracy: " + "{:.1%}".format(acc)
+            q.put([1, result])
 
     # Method to test CNN model on input from user
     def test_dataset_new_input(self, q, text_input):
@@ -148,19 +151,22 @@ class MovieDataset:
         self.config()
         # Load in Doc2Vec and CNN model. get doc vector for new input. Then do a prediction on it.
         self.model_movie.load(self.reader.get_models_path(), self.model_name)
-        model_training = tf.keras.models.load_model("./CNN_models/movie_review_model")
-        processed_content = simple_preprocess(remove_stopwords(text_input))
-        new_doc2vec = np.array(self.model_movie.infer_doc(processed_content))
-        new_doc2vec = np.reshape(new_doc2vec, (1, 300, 1))
-        prediction = (model_training.predict(new_doc2vec))
-        temp = []
-        for val in prediction[0]:
-            temp.append(round(val, 2))
+        if not os.path.exists('./CNN_models/movie_review_model'):
+            q.put([1, "No CNN model found. Please Train a model first"])
+        else:
+            model_training = tf.keras.models.load_model("./CNN_models/movie_review_model")
+            processed_content = simple_preprocess(remove_stopwords(text_input))
+            new_doc2vec = np.array(self.model_movie.infer_doc(processed_content))
+            new_doc2vec = np.reshape(new_doc2vec, (1, 300, 1))
+            prediction = (model_training.predict(new_doc2vec))
+            temp = []
+            for val in prediction[0]:
+                temp.append(round(val, 2))
 
-        result = "Bad Review    : " + "{:.1%}".format((temp[0])) + "\n"
-        result += "Good Review : " + "{:.1%}".format((temp[1]))
+            result = "Bad Review    : " + "{:.1%}".format((temp[0])) + "\n"
+            result += "Good Review : " + "{:.1%}".format((temp[1]))
 
-        q.put([1, result])
+            q.put([1, result])
 
     # Method to return the topic vector
     def get_topic_vector(self, t):
@@ -346,43 +352,46 @@ class ReutersDataset:
         self.config()
 
         self.load_d2v(q, 0)
-        model_training = tf.keras.models.load_model(self.model_reuters_path)
+        if not os.path.exists(self.model_reuters_path):
+            q.put([1, "No CNN model found. Please Train a model first"])
+        else:
+            model_training = tf.keras.models.load_model(self.model_reuters_path)
 
-        test_articles = [{'raw': reuters.raw(fileId), 'categories': reuters.categories(fileId)} for fileId in
-                         reuters.fileids() if fileId.startswith('test/')]
-        test_data = [self.model_reuters.infer_doc(gensim.utils.simple_preprocess(remove_stopwords(article['raw']))) for
-                     article in test_articles]
+            test_articles = [{'raw': reuters.raw(fileId), 'categories': reuters.categories(fileId)} for fileId in
+                             reuters.fileids() if fileId.startswith('test/')]
+            test_data = [self.model_reuters.infer_doc(gensim.utils.simple_preprocess(remove_stopwords(article['raw']))) for
+                         article in test_articles]
 
-        test_data = np.reshape(test_data, (len(test_data), 300, 1))
+            test_data = np.reshape(test_data, (len(test_data), 300, 1))
 
-        predictions = model_training.predict(np.asarray(test_data))
+            predictions = model_training.predict(np.asarray(test_data))
 
-        # If prediction is < 50% confident, prediction goes to 0 meaning not that category.
-        predictions[predictions < 0.5] = 0
-        predictions[predictions >= 0.5] = 1
+            # If prediction is < 50% confident, prediction goes to 0 meaning not that category.
+            predictions[predictions < 0.5] = 0
+            predictions[predictions >= 0.5] = 1
 
-        # MultiLabel Binarizer. Converts all classes into 0 and 1.
-        labelBinarizer = MultiLabelBinarizer()
-        labelBinarizer.fit([reuters.categories(fileId) for fileId in reuters.fileids()])
-        predicted_labels = labelBinarizer.inverse_transform(predictions)
+            # MultiLabel Binarizer. Converts all classes into 0 and 1.
+            labelBinarizer = MultiLabelBinarizer()
+            labelBinarizer.fit([reuters.categories(fileId) for fileId in reuters.fileids()])
+            predicted_labels = labelBinarizer.inverse_transform(predictions)
 
-        # Prints the list of actual titles vs. predicted titles.
-        for predicted_label, test_article in zip(predicted_labels, test_articles):
-            result = 'title: {}'.format(test_article['raw'].splitlines()[0])
-            q.put([0, result])
-            result = 'predicted: {} - actual: {}'.format(list(predicted_label), test_article['categories'])
-            q.put([0, result])
+            # Prints the list of actual titles vs. predicted titles.
+            for predicted_label, test_article in zip(predicted_labels, test_articles):
+                result = 'title: {}'.format(test_article['raw'].splitlines()[0])
+                q.put([0, result])
+                result = 'predicted: {} - actual: {}'.format(list(predicted_label), test_article['categories'])
+                q.put([0, result])
 
-        test_data = [self.model_reuters.infer_doc(gensim.utils.simple_preprocess(remove_stopwords(article['raw']))) for
-                     article in test_articles]
-        test_labels = labelBinarizer.transform([article['categories'] for article in test_articles])
-        test_data = np.reshape(test_data, (len(test_data), 300, 1))
-        test_labels = np.reshape(test_labels, (len(test_labels), 90, 1))
+            test_data = [self.model_reuters.infer_doc(gensim.utils.simple_preprocess(remove_stopwords(article['raw']))) for
+                         article in test_articles]
+            test_labels = labelBinarizer.transform([article['categories'] for article in test_articles])
+            test_data = np.reshape(test_data, (len(test_data), 300, 1))
+            test_labels = np.reshape(test_labels, (len(test_labels), 90, 1))
 
-        loss, acc = model_training.evaluate(test_data, test_labels, batch_size=128)
+            loss, acc = model_training.evaluate(test_data, test_labels, batch_size=128)
 
-        accResult = "Accuracy: " + "{:.1%}".format(acc)
-        q.put([1, accResult])
+            accResult = "Accuracy: " + "{:.1%}".format(acc)
+            q.put([1, accResult])
 
     def config(self):
         config = tf.compat.v1.ConfigProto(gpu_options=
