@@ -16,7 +16,7 @@ from nltk.corpus import reuters
 import nltk
 from Doc2Vec import D2V
 from data_storer import DataStorer
-
+# importing Reuters Dataset
 nltk.download('reuters')
 nltk.download('punkt')
 
@@ -42,6 +42,7 @@ class MovieDataset:
         self.X_test = None
         self.Y_test = None
 
+    # Load Doc2Vec model. checks if one exists first.
     def load_d2v(self, q, param):
         if not os.path.exists(os.path.join(self.reader.get_models_path(), self.model_name)):
             q.put([1, "No D2V models found. Please Train a D2V model"])
@@ -56,6 +57,7 @@ class MovieDataset:
             else:
                 q.put([1, "D2V model loaded Successfully"])
 
+    # Method to load in the labels etc for Movie Dataset
     def load_data(self):
         self.doc_labels = self.model_movie.get_labels()
         for label in self.doc_labels:
@@ -63,6 +65,7 @@ class MovieDataset:
             split_string = label.split("__")
             self.data_handler.add_topic(split_string[0])
 
+    # Method to train Doc2Vec model
     def train_d2v(self, q):
         q.put([0, "Staring training of Doc2Vec model"])
         train_corpus = list(self.reader.read_corpus_train(q))
@@ -72,10 +75,12 @@ class MovieDataset:
             self.model_movie.save(self.reader.get_models_path(), self.model_name)
             q.put([1, "D2v Model Saved."])
 
+    # Method to train CNN model
     def train_dataset(self, q):
 
         self.load_d2v(q, 0)
         self.config()
+        # q is the Queue being passed around. allowing me to pass variables around and provide feedback to user.
         self.load_trainset(q)
         self.load_testset(q)
 
@@ -93,7 +98,7 @@ class MovieDataset:
         self.Y_test = tf.squeeze(self.Y_test, axis=-1)
 
         q.put([0, "Begining Model Training"])
-
+        # CNN Model
         model_training = Sequential()
         model_training.add(InputLayer(input_shape=(300, 1)))
         model_training.add(Conv1D(filters=32, kernel_size=8, padding='same', activation='relu'))
@@ -119,6 +124,7 @@ class MovieDataset:
         accuracy = "Accuracy: " + "{:.1%}".format(accuracy)
         q.put([1, "Accuracy %s " % accuracy])
 
+    # Method to test the CNN model on test data
     def test_dataset(self, q):
         self.config()
         self.load_d2v(q, 0)
@@ -136,10 +142,11 @@ class MovieDataset:
         result = "Test Data Accuracy: " + "{:.1%}".format(acc)
         q.put([1, result])
 
+    # Method to test CNN model on input from user
     def test_dataset_new_input(self, q, text_input):
 
         self.config()
-
+        # Load in Doc2Vec and CNN model. get doc vector for new input. Then do a prediction on it.
         self.model_movie.load(self.reader.get_models_path(), self.model_name)
         model_training = tf.keras.models.load_model("./CNN_models/movie_review_model")
         processed_content = simple_preprocess(remove_stopwords(text_input))
@@ -155,6 +162,7 @@ class MovieDataset:
 
         q.put([1, result])
 
+    # Method to return the topic vector
     def get_topic_vector(self, t):
         topic_vec = list()
         for topic in self.labels:
@@ -165,6 +173,7 @@ class MovieDataset:
 
         return topic_vec
 
+    # Method to load in the training data
     def load_trainset(self, q):
 
         # print("Loading Training Set")
@@ -188,6 +197,7 @@ class MovieDataset:
 
         q.put([0, "Finished loading Training set"])
 
+    # Method to load in test data
     def load_testset(self, q):
         self.test_topics.clear()
         self.test_docs.clear()
@@ -217,6 +227,7 @@ class MovieDataset:
         # print("Finished loading test set")
         q.put([0, "Finished loading test set"])
 
+    # Method called during different stages. To confirgure the GPU memory to expand if needed
     def config(self):
         config = tf.compat.v1.ConfigProto(gpu_options=
                                           tf.compat.v1.GPUOptions(per_process_gpu_memory_fraction=0.8)
@@ -251,6 +262,7 @@ class ReutersDataset:
 
     def train_d2v(self, q):
         q.put([0, "Staring training of Doc2Vec model"])
+        # Creating taggedDocuments object. Used for Doc2Vec model training
         taggedDocuments = [
             TaggedDocument(words=gensim.utils.simple_preprocess(remove_stopwords(reuters.raw(fileId).lower())),
                            tags=[i]) for i, fileId in enumerate(reuters.fileids())]
@@ -301,7 +313,7 @@ class ReutersDataset:
 
         train_labels = tf.squeeze(train_labels, axis=-1)
         test_labels = tf.squeeze(test_labels, axis=-1)
-
+        # CNN Model
         model_training = Sequential()
         model_training.add(InputLayer(input_shape=(300, 1)))
         model_training.add(Conv1D(filters=32, kernel_size=8, padding='same', activation='relu'))
@@ -328,6 +340,7 @@ class ReutersDataset:
         result = "Accuracy: " + "{:.1%}".format(acc)
         q.put([1, result])
 
+    # Test CNN model on test data
     def test_dataset(self, q):
 
         self.config()
@@ -344,13 +357,16 @@ class ReutersDataset:
 
         predictions = model_training.predict(np.asarray(test_data))
 
+        # If prediction is < 50% confident, prediction goes to 0 meaning not that category.
         predictions[predictions < 0.5] = 0
         predictions[predictions >= 0.5] = 1
 
+        # MultiLabel Binarizer. Converts all classes into 0 and 1.
         labelBinarizer = MultiLabelBinarizer()
         labelBinarizer.fit([reuters.categories(fileId) for fileId in reuters.fileids()])
         predicted_labels = labelBinarizer.inverse_transform(predictions)
 
+        # Prints the list of actual titles vs. predicted titles.
         for predicted_label, test_article in zip(predicted_labels, test_articles):
             result = 'title: {}'.format(test_article['raw'].splitlines()[0])
             q.put([0, result])
@@ -378,6 +394,7 @@ class ReutersDataset:
         tf.compat.v1.keras.backend.set_session(session)
 
 
+# FileReader class used to parse through the Movie Review data
 class FileReader:
     def __init__(self):
         self.__models_paths = "./doc2vec_models"
@@ -402,11 +419,14 @@ class FileReader:
                     yield gensim.models.doc2vec.TaggedDocument(
                         gensim.utils.simple_preprocess(remove_stopwords(content)), [doc_id])
 
+    # Return Doc2Vec model path
     def get_models_path(self):
         return self.__models_paths
 
+    # Return training data path
     def get_training_path(self):
         return self.__training_path
 
+    # Return testing data path
     def get_testing_path(self):
         return self.__testing_path
